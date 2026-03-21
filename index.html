@@ -299,9 +299,85 @@ tr:hover .snap-del{opacity:1}
   .modal{width:100%;max-width:100%;border-radius:var(--r2) var(--r2) 0 0;padding:1.2rem 1rem 1.5rem;max-height:88vh;border-left:none;border-right:none;border-bottom:none}
 }
 @media(max-width:420px){.grid4{grid-template-columns:1fr}.kpi-val{font-size:18px}}
+
+/* ── AUTH SCREEN ── */
+.auth-screen{position:fixed;inset:0;background:var(--bg);z-index:500;display:flex;align-items:center;justify-content:center;padding:1rem}
+.auth-screen.h{display:none}
+.auth-card{background:var(--bg2);border:1px solid var(--b1);border-radius:16px;padding:2.4rem 2rem;width:100%;max-width:380px;display:flex;flex-direction:column;gap:0}
+.auth-logo{font-family:var(--mono);font-size:11px;color:var(--acc);letter-spacing:.2em;margin-bottom:2rem;text-align:center}
+.auth-logo-icon{font-size:28px;display:block;margin-bottom:.5rem}
+.auth-tabs{display:grid;grid-template-columns:1fr 1fr;background:var(--sur);border-radius:var(--r);padding:3px;margin-bottom:1.6rem;gap:3px}
+.auth-tab{padding:.45rem;border-radius:6px;font-size:12px;font-weight:500;background:transparent;color:var(--t2);transition:all .15s;border:none;cursor:pointer}
+.auth-tab.on{background:var(--bg2);color:var(--t1);box-shadow:0 1px 4px rgba(0,0,0,.4)}
+.auth-field{display:flex;flex-direction:column;gap:.3rem;margin-bottom:.9rem}
+.auth-field label{font-size:10px;font-family:var(--mono);color:var(--t2);letter-spacing:.07em}
+.auth-field input{background:var(--sur);border:1px solid var(--b2);border-radius:var(--r);padding:.65rem .9rem;color:var(--t1);font-size:13px;font-family:var(--font);transition:border-color .15s;outline:none;width:100%}
+.auth-field input:focus{border-color:var(--acc)}
+.auth-submit{background:var(--acc);color:#090909;font-size:13px;font-weight:600;padding:.7rem;border-radius:var(--r);width:100%;margin-top:.4rem;transition:background .15s;border:none;cursor:pointer;font-family:var(--font)}
+.auth-submit:hover{background:var(--acc2)}
+.auth-submit:disabled{background:var(--b2);color:var(--t3);cursor:not-allowed}
+.auth-err{font-size:11px;color:var(--red);font-family:var(--mono);background:var(--rbg);border:1px solid rgba(248,113,113,.15);border-radius:var(--r);padding:.5rem .75rem;margin-bottom:.75rem;display:none}
+.auth-err.on{display:block}
+.auth-ok{font-size:11px;color:var(--green);font-family:var(--mono);background:var(--gbg);border:1px solid rgba(74,222,128,.15);border-radius:var(--r);padding:.5rem .75rem;margin-bottom:.75rem;display:none}
+.auth-ok.on{display:block}
+.auth-hint{font-size:10px;color:var(--t3);font-family:var(--mono);text-align:center;margin-top:1.2rem;line-height:1.7}
+/* Sidebar user badge */
+.sb-user{display:flex;align-items:center;gap:.55rem;padding:.55rem .75rem;margin:.3rem .1rem 0;border-radius:var(--r);background:var(--sur);border:1px solid var(--b1)}
+.sb-user-avatar{width:24px;height:24px;border-radius:50%;background:var(--accbg);border:1px solid rgba(200,245,66,.2);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:600;color:var(--acc);flex-shrink:0;font-family:var(--mono)}
+.sb-user-name{font-size:11px;color:var(--t1);font-weight:500;flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.logout-btn{font-size:9px;font-family:var(--mono);color:var(--t3);background:transparent;border:1px solid var(--b1);border-radius:4px;padding:.15rem .4rem;cursor:pointer;transition:all .12s;flex-shrink:0}
+.logout-btn:hover{color:var(--red);border-color:rgba(248,113,113,.3)}
 </style>
 </head>
 <body>
+
+<!-- ══ AUTH SCREEN ══ -->
+<div class="auth-screen" id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <span class="auth-logo-icon">📊</span>
+      PORTFOLIO.KR
+    </div>
+    <div class="auth-tabs">
+      <button class="auth-tab on" id="tab-login" onclick="switchAuthTab('login')">로그인</button>
+      <button class="auth-tab" id="tab-signup" onclick="switchAuthTab('signup')">회원가입</button>
+    </div>
+    <div class="auth-err" id="auth-err"></div>
+    <div class="auth-ok" id="auth-ok"></div>
+
+    <!-- LOGIN FORM -->
+    <div id="form-login">
+      <div class="auth-field">
+        <label>아이디</label>
+        <input id="l-id" type="text" placeholder="아이디를 입력하세요" autocomplete="username" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <div class="auth-field">
+        <label>비밀번호</label>
+        <input id="l-pw" type="password" placeholder="비밀번호를 입력하세요" autocomplete="current-password" onkeydown="if(event.key==='Enter')doLogin()"/>
+      </div>
+      <button class="auth-submit" onclick="doLogin()">로그인</button>
+    </div>
+
+    <!-- SIGNUP FORM -->
+    <div id="form-signup" style="display:none">
+      <div class="auth-field">
+        <label>아이디 <span style="color:var(--t3)">(영문·숫자 4-20자)</span></label>
+        <input id="s-id" type="text" placeholder="사용할 아이디" autocomplete="username" maxlength="20" oninput="validateSignup()"/>
+      </div>
+      <div class="auth-field">
+        <label>비밀번호 <span style="color:var(--t3)">(6자 이상)</span></label>
+        <input id="s-pw" type="password" placeholder="비밀번호" autocomplete="new-password" oninput="validateSignup()"/>
+      </div>
+      <div class="auth-field">
+        <label>비밀번호 확인</label>
+        <input id="s-pw2" type="password" placeholder="비밀번호 재입력" autocomplete="new-password" oninput="validateSignup()" onkeydown="if(event.key==='Enter')doSignup()"/>
+      </div>
+      <button class="auth-submit" id="signup-btn" onclick="doSignup()" disabled>회원가입</button>
+    </div>
+
+    <div class="auth-hint">비밀번호는 이 기기의 로컬 저장소에 보관됩니다.<br>공유 PC에서는 사용 후 로그아웃하세요.</div>
+  </div>
+</div>
 
 <header class="mob-hdr">
   <span class="mob-logo">PORTFOLIO.KR</span>
@@ -334,6 +410,11 @@ tr:hover .snap-del{opacity:1}
   <div class="ni" onclick="nav('history',this)"><span class="ndot" style="background:var(--t3)"></span>히스토리</div>
   <div class="ni" onclick="nav('target',this)"><span class="ndot" style="background:var(--t3)"></span>목표 배분</div>
   <div class="ni" onclick="nav('cashflow',this)"><span class="ndot" style="background:var(--orange)"></span>현금흐름</div>
+  <div class="sb-user" id="sb-user-badge">
+    <div class="sb-user-avatar" id="sb-avatar">?</div>
+    <span class="sb-user-name" id="sb-username">—</span>
+    <button class="logout-btn" onclick="doLogout()">로그아웃</button>
+  </div>
   <div class="sb-footer">v0.4 · GitHub Codespace</div>
 </aside>
 
@@ -644,10 +725,44 @@ var CF_BAR_LBL   = {
 /* ════════════════════════════════════════════
    STATE  (all var — no TDZ)
 ════════════════════════════════════════════ */
-var assets    = safeLoad('pf4_assets', []);
-var snapshots = safeLoad('pf4_snaps',  []);
-var target    = safeLoad('pf4_target', {stock:40,crypto:20,cash:30,real:10});
-var cfItems   = safeLoad('pf4_cf',     []);
+/* ════════════════════════════════════════════
+   AUTH SYSTEM
+════════════════════════════════════════════ */
+var AUTH_KEY   = 'pf4_users';
+var SESSION_KEY= 'pf4_session';
+
+/* Simple deterministic hash (djb2) — good enough for local personal tool */
+function hashPw(username, password) {
+  var str = username + ':' + password + ':pf4salt';
+  var hash = 5381;
+  for (var i = 0; i < str.length; i++) {
+    hash = ((hash << 5) + hash) ^ str.charCodeAt(i);
+    hash = hash >>> 0; // unsigned 32-bit
+  }
+  return hash.toString(16).padStart(8,'0');
+}
+
+function getUsers() { return safeLoad(AUTH_KEY, []); }
+function saveUsers(u) { localStorage.setItem(AUTH_KEY, JSON.stringify(u)); }
+function getSession() {
+  try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch(e) { return null; }
+}
+function setSession(user) { sessionStorage.setItem(SESSION_KEY, JSON.stringify(user)); }
+function clearSession() { sessionStorage.removeItem(SESSION_KEY); }
+
+/* Current logged-in user (set by initApp) */
+var currentUser = null;
+
+/* Data key helpers — all data is namespaced per user ID */
+function K(suffix) { return 'pf4_' + currentUser.id + '_' + suffix; }
+
+/* ════════════════════════════════════════════
+   STATE  (all var — populated after login)
+════════════════════════════════════════════ */
+var assets    = [];
+var snapshots = [];
+var target    = {stock:40,crypto:20,cash:30,real:10};
+var cfItems   = [];
 var fx        = {USD:1330, JPY:8.9, EUR:1430};
 
 var ovFilter  = null;
@@ -670,57 +785,121 @@ function safeLoad(key, def) {
          : (v && typeof v === 'object' ? v : def);
   } catch(e) { return def; }
 }
-function saveA(){ localStorage.setItem('pf4_assets',    JSON.stringify(assets)) }
-function saveS(){ localStorage.setItem('pf4_snaps',     JSON.stringify(snapshots)) }
-function saveT(){ localStorage.setItem('pf4_target',    JSON.stringify(target)) }
-function saveCF(){ localStorage.setItem('pf4_cf',       JSON.stringify(cfItems)) }
-function uid(p){ return (p||'x')+Date.now().toString(36)+Math.random().toString(36).slice(2,5) }
 
-/* ── DEMO DATA ── */
+/* Save functions — always use per-user keys */
+function saveA()  { localStorage.setItem(K('assets'),    JSON.stringify(assets)) }
+function saveS()  { localStorage.setItem(K('snaps'),     JSON.stringify(snapshots)) }
+function saveT()  { localStorage.setItem(K('target'),    JSON.stringify(target)) }
+function saveCF() { localStorage.setItem(K('cf'),        JSON.stringify(cfItems)) }
+function uid(p)   { return (p||'x')+Date.now().toString(36)+Math.random().toString(36).slice(2,5) }
+
+/* Load user's data (called on login — starts empty for new users) */
+function loadUserData() {
+  assets    = safeLoad(K('assets'),  []);
+  snapshots = safeLoad(K('snaps'),   []);
+  target    = safeLoad(K('target'),  {stock:40,crypto:20,cash:30,real:10});
+  cfItems   = safeLoad(K('cf'),      []);
+}
+
+/* ── AUTH UI ── */
+function switchAuthTab(tab) {
+  el('tab-login').classList.toggle('on', tab==='login');
+  el('tab-signup').classList.toggle('on', tab==='signup');
+  el('form-login').style.display  = tab==='login'  ? '' : 'none';
+  el('form-signup').style.display = tab==='signup' ? '' : 'none';
+  clearAuthMsg();
+}
+function showAuthErr(msg) {
+  var e=el('auth-err'); e.textContent=msg; e.classList.add('on');
+  el('auth-ok').classList.remove('on');
+}
+function showAuthOk(msg) {
+  var e=el('auth-ok'); e.textContent=msg; e.classList.add('on');
+  el('auth-err').classList.remove('on');
+}
+function clearAuthMsg() {
+  el('auth-err').classList.remove('on');
+  el('auth-ok').classList.remove('on');
+}
+
+function validateSignup() {
+  var id  = (el('s-id').value||'').trim();
+  var pw  = el('s-pw').value||'';
+  var pw2 = el('s-pw2').value||'';
+  var ok  = /^[a-zA-Z0-9]{4,20}$/.test(id) && pw.length>=6 && pw===pw2;
+  el('signup-btn').disabled = !ok;
+  return ok;
+}
+
+function doLogin() {
+  var id = (el('l-id').value||'').trim();
+  var pw = el('l-pw').value||'';
+  if(!id||!pw){ showAuthErr('아이디와 비밀번호를 입력하세요'); return; }
+  var users = getUsers();
+  var user = users.find(function(u){ return u.username===id });
+  if(!user){ showAuthErr('존재하지 않는 아이디입니다'); return; }
+  if(user.passHash !== hashPw(id, pw)){ showAuthErr('비밀번호가 틀렸습니다'); return; }
+  setSession({id:user.id, username:user.username});
+  initApp(user);
+}
+
+function doSignup() {
+  if(!validateSignup()) return;
+  var id  = (el('s-id').value||'').trim();
+  var pw  = el('s-pw').value||'';
+  var users = getUsers();
+  if(users.find(function(u){ return u.username===id })){ showAuthErr('이미 사용 중인 아이디입니다'); return; }
+  var newUser = {id: uid('u'), username: id, passHash: hashPw(id, pw), createdAt: new Date().toISOString()};
+  users.push(newUser);
+  saveUsers(users);
+  showAuthOk('회원가입 완료! 로그인합니다...');
+  setTimeout(function(){
+    setSession({id:newUser.id, username:newUser.username});
+    initApp(newUser);
+  }, 900);
+}
+
+function doLogout() {
+  if(!confirm('로그아웃 하시겠어요?')) return;
+  clearSession();
+  currentUser = null;
+  assets=[]; snapshots=[]; cfItems=[]; target={stock:40,crypto:20,cash:30,real:10};
+  /* Reset charts */
+  Object.keys(charts).forEach(function(k){ if(charts[k]){charts[k].destroy();charts[k]=null;} });
+  el('auth-screen').classList.remove('h');
+  el('l-id').value=''; el('l-pw').value='';
+  clearAuthMsg();
+  switchAuthTab('login');
+}
+
+function initApp(user) {
+  currentUser = user;
+  loadUserData();
+  el('auth-screen').classList.add('h');
+  /* Update sidebar user badge */
+  el('sb-avatar').textContent   = user.username.slice(0,1).toUpperCase();
+  el('sb-username').textContent = user.username;
+  /* Render */
+  var today = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
+  el('dash-date').textContent = today;
+  el('ov-date').textContent   = today;
+  renderDashboard();
+  buildNewsChips();
+  loadFX();
+  setTimeout(fetchNews, 800);
+}
+
+/* ── BOOT: check existing session ── */
 (function() {
-  if (!assets.length) {
-    assets = [
-      {id:uid('a'),cat:'stock', sub:'kr',   name:'삼성전자',    ticker:'005930',  currency:'KRW',qty:30,    avgPrice:71000,     curPrice:75400,     memo:''},
-      {id:uid('a'),cat:'stock', sub:'us',   name:'애플',        ticker:'AAPL',    currency:'USD',qty:5,     avgPrice:180,       curPrice:195,       memo:'해외주식'},
-      {id:uid('a'),cat:'crypto',sub:'crypto',name:'비트코인',   ticker:'BTC',     currency:'KRW',qty:0.05,  avgPrice:82000000,  curPrice:95000000,  memo:''},
-      {id:uid('a'),cat:'crypto',sub:'crypto',name:'이더리움',   ticker:'ETH',     currency:'KRW',qty:1.2,   avgPrice:3200000,   curPrice:2900000,   memo:''},
-      {id:uid('a'),cat:'cash',  sub:'deposit',name:'KB 정기예금',bank:'KB국민은행',principal:10000000,rate:3.8,startDate:'2024-01-15',endDate:'2025-01-15',memo:''},
-      {id:uid('a'),cat:'cash',  sub:'savings',name:'신한 청약저축',bank:'신한은행',monthlyAmt:500000,rate:2.5,startDate:'2023-06-01',endDate:'2026-06-01',memo:''},
-      {id:uid('a'),cat:'cash',  sub:'cma',  name:'한투 CMA',    bank:'한국투자증권',balance:5500000,rate:3.5,memo:'비상금'},
-      {id:uid('a'),cat:'real',  sub:'office',name:'강남 오피스텔',address:'서울 강남구',buyPrice:120000000,curPrice:135000000,deposit:30000000,monthlyRent:450000,memo:''}
-    ];
-    saveA();
+  var sess = getSession();
+  if(sess && sess.id && sess.username) {
+    var users = getUsers();
+    var user = users.find(function(u){ return u.id===sess.id });
+    if(user) { initApp(user); return; }
   }
-  if (!cfItems.length) {
-    cfItems = [
-      {id:uid('c'),type:'income', cat:'salary',  name:'월급',           freq:'monthly', amount:4500000,tax:0,   linkedId:'',memo:'세후 실수령'},
-      {id:uid('c'),type:'income', cat:'bonus',   name:'성과급',         freq:'biannual',amount:4500000,tax:0,   linkedId:'',memo:'6월·12월',month:6},
-      {id:uid('c'),type:'income', cat:'dividend',name:'삼성전자 배당',   freq:'quarterly',amount:110000,tax:15.4,linkedId:'',memo:''},
-      {id:uid('c'),type:'income', cat:'interest',name:'KB예금 이자',     freq:'annual',  amount:380000, tax:15.4,linkedId:'',memo:'만기 수령',month:1},
-      {id:uid('c'),type:'income', cat:'rent_in', name:'오피스텔 월세',   freq:'monthly', amount:450000, tax:0,   linkedId:'',memo:''},
-      {id:uid('c'),type:'expense',cat:'living',  name:'생활비',          freq:'monthly', amount:1800000,tax:0,   linkedId:'',memo:'식비·교통·통신'},
-      {id:uid('c'),type:'expense',cat:'maint',   name:'오피스텔 관리비', freq:'monthly', amount:150000, tax:0,   linkedId:'',memo:''},
-      {id:uid('c'),type:'expense',cat:'tax',     name:'재산세',          freq:'biannual',amount:600000, tax:0,   linkedId:'',memo:'7월·9월',month:7},
-      {id:uid('c'),type:'expense',cat:'tax',     name:'주식 양도세 예상',freq:'annual',  amount:500000, tax:0,   linkedId:'',memo:'연말 신고',month:12},
-      {id:uid('c'),type:'expense',cat:'insurance',name:'종합보험',       freq:'monthly', amount:180000, tax:0,   linkedId:'',memo:''}
-    ];
-    saveCF();
-  }
-  if (snapshots.length < 3) {
-    var td = todayStr();
-    var ex = new Set(snapshots.map(function(s){ return s.date }));
-    var bases = [340,345,350,346,355,362,358,367,375,382,378,386];
-    for (var i=0;i<12;i++) {
-      var d = new Date(); d.setDate(d.getDate()-((11-i)*7));
-      var ds = d.toISOString().slice(0,10);
-      if (!ex.has(ds) && ds !== td) {
-        var t = bases[i]*1000000;
-        snapshots.push({date:ds,total:t,bd:{stock:Math.round(t*.38),crypto:Math.round(t*.18),cash:Math.round(t*.27),real:Math.round(t*.17)}});
-      }
-    }
-    snapshots.sort(function(a,b){ return a.date.localeCompare(b.date) });
-    saveS();
-  }
+  /* No valid session — show login screen */
+  el('auth-screen').classList.remove('h');
+  setTimeout(function(){ var e=el('l-id'); if(e)e.focus(); }, 100);
 })();
 
 /* ════════════════════════════════════════════
@@ -1640,16 +1819,6 @@ function closeSb() {
   el('ham-btn').textContent='☰';
 }
 document.querySelectorAll('.ni').forEach(function(n){ n.addEventListener('click',function(){if(window.innerWidth<=768)closeSb()}); });
-
-/* ════════════════════════════════════════════
-   INIT
-════════════════════════════════════════════ */
-el('dash-date').textContent = new Date().toLocaleDateString('ko-KR',{year:'numeric',month:'long',day:'numeric',weekday:'long'});
-el('ov-date').textContent   = el('dash-date').textContent;
-renderDashboard();
-buildNewsChips();
-loadFX();
-setTimeout(fetchNews, 800);
 </script>
 </body>
 </html>
